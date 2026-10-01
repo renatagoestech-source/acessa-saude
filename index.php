@@ -1,5 +1,6 @@
 <?php
 // Acessa+ Saúde - plataforma web de agendamento e acompanhamento de saúde.
+$isVercel = getenv('VERCEL') === '1';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -73,13 +74,21 @@
                     <h1>Banco de dados ainda não conectado</h1>
                     <p id="databaseSetupMessage">O sistema está verificando a conexão com o MySQL.</p>
                     <div class="database-steps">
+                        <?php if ($isVercel): ?>
+                        <div><b>1</b><span>Configure na Vercel as variáveis <strong>ACESSA_DB_HOST</strong>, <strong>ACESSA_DB_PORT</strong>, <strong>ACESSA_DB_NAME</strong>, <strong>ACESSA_DB_USER</strong> e <strong>ACESSA_DB_PASS</strong>.</span></div>
+                        <div><b>2</b><span>Use um MySQL externo e importe nele o esquema do arquivo <strong>database.sql</strong>.</span></div>
+                        <div><b>3</b><span>Depois de configurar as variáveis, faça um novo deploy e atualize esta página.</span></div>
+                        <?php else: ?>
                         <div><b>1</b><span>Inicie o Apache e o MySQL no XAMPP.</span></div>
                         <div><b>2</b><span>Abra o instalador para criar o banco <strong>conecta_saude</strong>.</span></div>
                         <div><b>3</b><span>Volte para esta página e atualize o navegador.</span></div>
+                        <?php endif; ?>
                     </div>
                     <div class="actions database-actions">
+                        <?php if (!$isVercel): ?>
                         <a class="btn primary" href="install.php">Instalar banco de dados</a>
                         <a class="btn secondary" href="diagnostico_xampp.php">Ver diagnóstico do XAMPP</a>
+                        <?php endif; ?>
                     </div>
                     <p class="database-note">Se o MySQL usa outra porta ou senha, veja as instruções no arquivo <strong>ATUALIZACAO.txt</strong>.</p>
                 </div>
