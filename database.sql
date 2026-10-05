@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS ubs (
     telefone VARCHAR(30) NOT NULL,
     horario VARCHAR(100) NOT NULL,
     usuario VARCHAR(80) NOT NULL UNIQUE,
+    ativa TINYINT(1) NOT NULL DEFAULT 1,
     limite_diario INT UNSIGNED NOT NULL DEFAULT 12,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -65,7 +66,8 @@ CREATE TABLE IF NOT EXISTS pacientes (
     nome VARCHAR(150) NOT NULL,
     telefone VARCHAR(30) NOT NULL,
     email VARCHAR(180) NULL,
-    cpf VARCHAR(14) NULL UNIQUE,
+    cpf VARCHAR(14) NULL,
+    INDEX idx_pacientes_cpf (cpf),
     sus VARCHAR(40) NOT NULL UNIQUE,
     ubs_id VARCHAR(20) NULL,
     endereco VARCHAR(255) NULL,
@@ -128,7 +130,7 @@ CREATE TABLE IF NOT EXISTS lista_espera (
 
 CREATE TABLE IF NOT EXISTS suporte_mensagens (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, protocolo VARCHAR(30) NOT NULL UNIQUE, acesso_token VARCHAR(64) NOT NULL, paciente_id INT UNSIGNED NULL, nome VARCHAR(150) NOT NULL, telefone VARCHAR(30) NOT NULL, mensagem TEXT NOT NULL,
-    resposta TEXT NULL, destino_tipo VARCHAR(20) NOT NULL DEFAULT 'desenvolvedor', destino_id VARCHAR(60) NULL, encaminhado_desenvolvedor TINYINT(1) NOT NULL DEFAULT 0, status ENUM('aberto','em_atendimento','resolvido') NOT NULL DEFAULT 'aberto', criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP, atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    resposta TEXT NULL, resposta_clinica TEXT NULL, resposta_desenvolvedor TEXT NULL, destino_tipo VARCHAR(20) NOT NULL DEFAULT 'desenvolvedor', destino_id VARCHAR(60) NULL, encaminhado_desenvolvedor TINYINT(1) NOT NULL DEFAULT 0, encaminhamento_motivo TEXT NULL, status ENUM('aberto','em_atendimento','resolvido') NOT NULL DEFAULT 'aberto', criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP, atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_suporte_paciente FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
@@ -157,16 +159,34 @@ CREATE TABLE IF NOT EXISTS administradores (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     usuario VARCHAR(80) NOT NULL UNIQUE,
     senha_hash VARCHAR(255) NOT NULL,
-    tipo ENUM('desenvolvedor','ubs') NOT NULL,
+    tipo ENUM('desenvolvedor','ubs','secretaria') NOT NULL,
     ubs_id VARCHAR(20) NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_admin_ubs FOREIGN KEY (ubs_id) REFERENCES ubs(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS indicadores_saude (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ubs_id VARCHAR(20) NOT NULL,
+    tipo ENUM('campanha','vacina','citologia') NOT NULL,
+    nome VARCHAR(180) NOT NULL,
+    meta INT UNSIGNED NOT NULL,
+    realizado INT UNSIGNED NOT NULL DEFAULT 0,
+    periodo_inicio DATE NULL,
+    periodo_fim DATE NULL,
+    criado_por INT UNSIGNED NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_indicadores_periodo (ubs_id,tipo,periodo_inicio,periodo_fim),
+    CONSTRAINT fk_indicadores_ubs FOREIGN KEY (ubs_id) REFERENCES ubs(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_indicadores_admin FOREIGN KEY (criado_por) REFERENCES administradores(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS auditoria (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     admin_id INT UNSIGNED NULL,
+    profissional_id INT UNSIGNED NULL,
     tipo_usuario VARCHAR(30) NULL,
     acao VARCHAR(100) NOT NULL,
     entidade VARCHAR(80) NULL,
@@ -176,6 +196,7 @@ CREATE TABLE IF NOT EXISTS auditoria (
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_auditoria_data (criado_em),
     INDEX idx_auditoria_admin (admin_id),
+    INDEX idx_auditoria_profissional_data (profissional_id, criado_em),
     CONSTRAINT fk_auditoria_admin FOREIGN KEY (admin_id) REFERENCES administradores(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
@@ -221,6 +242,11 @@ CREATE TABLE IF NOT EXISTS profissionais (
     aviso_publico TEXT NULL,
     mensagem_pos_venda TEXT NULL,
     limite_diario INT UNSIGNED NOT NULL DEFAULT 12,
+    confirmacao_automatica TINYINT(1) NOT NULL DEFAULT 1,
+    cancelamento_ate_horas SMALLINT UNSIGNED NOT NULL DEFAULT 24,
+    remarcacao_ate_horas SMALLINT UNSIGNED NOT NULL DEFAULT 24,
+    email_verificado_em DATETIME NULL,
+    auth_version INT UNSIGNED NOT NULL DEFAULT 1,
     cor_primaria VARCHAR(20) NOT NULL DEFAULT '#0fa7a7',
     cor_secundaria VARCHAR(20) NOT NULL DEFAULT '#075b5d',
     status ENUM('ativo','suspenso','pendente') NOT NULL DEFAULT 'ativo',
@@ -245,6 +271,8 @@ CREATE TABLE IF NOT EXISTS agendas_profissionais (
     inicio TIME NOT NULL,
     fim TIME NOT NULL,
     duracao_minutos SMALLINT UNSIGNED NOT NULL DEFAULT 30,
+    pausa_inicio TIME NULL,
+    pausa_fim TIME NULL,
     ativo TINYINT(1) NOT NULL DEFAULT 1,
     UNIQUE KEY uq_agenda_profissional (profissional_id,dia_semana,inicio,fim),
     CONSTRAINT fk_agenda_profissional FOREIGN KEY (profissional_id) REFERENCES profissionais(id) ON DELETE CASCADE
@@ -256,6 +284,7 @@ CREATE TABLE IF NOT EXISTS consultas_profissionais (
     paciente_id INT UNSIGNED NOT NULL,
     data_consulta DATE NOT NULL,
     horario TIME NOT NULL,
+    duracao_minutos SMALLINT UNSIGNED NOT NULL DEFAULT 30,
     assunto TEXT NULL,
     valor DECIMAL(10,2) NULL,
     forma_pagamento VARCHAR(40) NULL,
@@ -268,6 +297,7 @@ CREATE TABLE IF NOT EXISTS consultas_profissionais (
     cancelamento_motivo VARCHAR(255) NULL,
     confirmada_em DATETIME NULL,
     atendida_em DATETIME NULL,
+    manage_token_hash CHAR(64) NULL,
     criada_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_cp_prof_data (profissional_id,data_consulta,horario),
     INDEX idx_cp_paciente (paciente_id,data_consulta),
@@ -352,6 +382,26 @@ CREATE TABLE IF NOT EXISTS prontuarios_profissionais (
     INDEX idx_prontuario_paciente (profissional_id,paciente_id,criado_em),
     CONSTRAINT fk_pront_profissional FOREIGN KEY (profissional_id) REFERENCES profissionais(id) ON DELETE RESTRICT,
     CONSTRAINT fk_pront_paciente FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS tokens_profissionais (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    profissional_id INT UNSIGNED NOT NULL,
+    tipo ENUM('verificar_email','redefinir_senha') NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    expira_em DATETIME NOT NULL,
+    consumido_em DATETIME NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_token_prof_tipo (profissional_id,tipo,expira_em),
+    CONSTRAINT fk_token_profissional FOREIGN KEY (profissional_id) REFERENCES profissionais(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS tentativas_autenticacao (
+    chave CHAR(64) PRIMARY KEY,
+    tentativas SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    inicio_janela DATETIME NOT NULL,
+    bloqueado_ate DATETIME NULL,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS planos_assinatura (

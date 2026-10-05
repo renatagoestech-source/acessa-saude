@@ -1,5 +1,7 @@
 # Acessa+ Saúde — Portais separados
 
+> **Nota da versão corrigida:** este guia registra funcionalidades de versões anteriores. Nesta distribuição, o portal da clínica não mostra a aba/atalhos de prontuário nem disponibiliza essas rotas na API; dados existentes no banco são preservados. Consulte `IMPLEMENTACAO_AGENDA_SEGURANCA.md` para as instruções atuais de agenda e salvamento.
+
 ## Estrutura recomendada
 
 A plataforma possui uma entrada única, mas três caminhos separados:
