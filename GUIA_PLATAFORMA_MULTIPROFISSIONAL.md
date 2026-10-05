@@ -1,5 +1,7 @@
 # Plataforma Acessa+ Saúde — Multi-profissional
 
+> **Nota da versão corrigida:** este guia contém referência a recursos de prontuário de versões anteriores. Nesta distribuição, a aba/atalhos e as rotas de API de prontuário foram retirados; os registros já existentes no banco não são apagados. Para comportamento atual do expediente, pausas e salvamento, consulte `IMPLEMENTACAO_AGENDA_SEGURANCA.md`.
+
 ## O que foi implementado
 
 A versão agora permite múltiplas contas profissionais no mesmo sistema, com isolamento por `profissional_id`.

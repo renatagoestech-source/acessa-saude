@@ -1,6 +1,70 @@
 <?php
 declare(strict_types=1);
 
+const SESSION_IDLE_TIMEOUT = 1800;
+const SESSION_ABSOLUTE_TIMEOUT = 28800;
+
+function configure_secure_session(): void
+{
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
+    ini_set('session.cookie_httponly', '1');
+    ini_set('session.cookie_samesite', 'Lax');
+    $https = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off')
+        || (strtolower((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https')
+        || getenv('VERCEL') === '1';
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => $https,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    date_default_timezone_set('America/Sao_Paulo');
+}
+
+function enforce_session_lifetime(): void
+{
+    $hasAuth = !empty($_SESSION['professional']) || !empty($_SESSION['admin']);
+    if (!$hasAuth) return;
+    // Mantém a sessão profissional durante o trabalho; o botão Sair continua encerrando o acesso.
+    if (!empty($_SESSION['professional'])) {
+        $_SESSION['_last_activity'] = time();
+        return;
+    }
+    $now = time();
+    $last = (int)($_SESSION['_last_activity'] ?? $now);
+    $created = (int)($_SESSION['_auth_created_at'] ?? $now);
+    if (($now - $last) > SESSION_IDLE_TIMEOUT || ($now - $created) > SESSION_ABSOLUTE_TIMEOUT) {
+        $_SESSION = [];
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            if (ini_get('session.use_cookies')) {
+                $params = session_get_cookie_params();
+                setcookie(session_name(), '', ['expires' => time() - 42000, 'path' => $params['path'] ?: '/', 'domain' => $params['domain'] ?? '', 'secure' => (bool)$params['secure'], 'httponly' => true, 'samesite' => $params['samesite'] ?? 'Lax']);
+            }
+            session_regenerate_id(true);
+        }
+        return;
+    }
+    $_SESSION['_last_activity'] = $now;
+}
+
+function rotate_csrf_token(): string
+{
+    $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
+    return $_SESSION['_csrf_token'];
+}
+
+function require_csrf(): void
+{
+    $expected = (string)($_SESSION['_csrf_token'] ?? '');
+    $received = (string)($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    if ($expected === '' || $received === '' || !hash_equals($expected, $received)) {
+        $currentToken = $expected !== '' ? $expected : rotate_csrf_token();
+        json_response(['success' => false, 'message' => 'A sessão de segurança expirou. Atualizando a proteção; tente novamente.', 'code' => 'CSRF_INVALID', 'csrf_token' => $currentToken], 419);
+    }
+}
+
 function json_response(array $data, int $status = 200): never
 {
     // Remove qualquer warning/saída acidental antes do JSON, evitando
@@ -126,7 +190,7 @@ function authorize_ubs(string $ubsId): array
     $session = require_admin();
 
     if (
-        $session['tipo'] !== 'desenvolvedor' &&
+        !in_array($session['tipo'], ['desenvolvedor', 'secretaria'], true) &&
         $session['ubs_id'] !== $ubsId
     ) {
         json_response([

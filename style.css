@@ -60,3 +60,62 @@
 
 /* Oculta a área de aviso público quando não houver conteúdo, evitando a linha vazia sob os dados da clínica. */
 .public-clinic-notice:empty{display:none!important}
+
+.schedule-config{margin:24px 0;padding:20px;background:#f4fbfb;border:1px solid #d7eeee;border-radius:16px}.schedule-config h3{margin-bottom:5px}.schedule-row{display:grid;grid-template-columns:1.05fr repeat(5,minmax(110px,1fr));gap:10px;align-items:end;padding:12px 0;border-top:1px solid #dcebed}.schedule-row label{margin:0;font-size:11px}.schedule-row input{margin-top:5px;padding:9px 10px}.schedule-row .schedule-day{display:flex;align-items:center;gap:7px;font-size:13px}.schedule-row .schedule-day input{width:auto;margin:0}.security-settings{margin:20px 0}.security-settings p{margin:8px 0 14px}.auth-recovery{display:flex;gap:8px;margin-top:14px}.auth-recovery .btn{flex:1;padding:10px 8px;font-size:12px}.field-help{display:block;color:#6f898c;font-size:12px;line-height:1.45;margin-top:6px}.clinic-confirmation .appointment-actions{flex-wrap:wrap}@media(max-width:900px){.schedule-row{grid-template-columns:1fr 1fr}.schedule-row .schedule-day{grid-column:1/-1}.auth-recovery{flex-direction:column}}
+
+
+/* Agenda semanal compacta: seletor de dias e painel único de edição. */
+.schedule-editor{margin:14px 0 18px}
+.schedule-day-tabs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:15px 0 12px}
+.schedule-day-tab{display:flex;justify-content:center;align-items:center;gap:7px;min-height:39px;padding:7px 9px;border:1px solid #dce8e8;border-radius:11px;background:#fff;color:#526a6c;font-size:12px;font-weight:750;cursor:pointer;transition:background .16s ease,border-color .16s ease,color .16s ease}
+.schedule-day-tab:hover{border-color:#8fcaca;background:#f2fbfa}
+.schedule-day-tab.is-selected{border-color:#0f9291;background:#087f80;color:#fff;box-shadow:0 4px 12px rgba(8,127,128,.16)}
+.schedule-tab-dot{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#c8d2d3}
+.schedule-day-tab.is-open .schedule-tab-dot{background:#18a386}
+.schedule-day-tab.is-selected.is-open .schedule-tab-dot{background:#b7f0da}
+.schedule-day-tab.is-selected:not(.is-open) .schedule-tab-dot{background:#efd28a}
+.schedule-panel{padding:17px 18px;border:1px solid #dce9e9;border-radius:15px;background:#fff;box-shadow:0 5px 18px rgba(18,72,75,.045)}
+.schedule-panel[hidden]{display:none!important}
+.schedule-panel.is-closed{background:#f8fafa;box-shadow:none}
+.schedule-panel-head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding-bottom:13px;border-bottom:1px solid #e7eeee}
+.schedule-panel-head h4{margin:0;color:#16494b;font-size:15px;font-weight:750}
+.schedule-status{display:inline-flex;margin-top:5px;padding:3px 8px;border-radius:999px;background:#e6f7f3;color:#0a8176;font-size:10px;font-weight:700}
+.schedule-panel.is-closed .schedule-status{background:#edf0f0;color:#718184}
+.schedule-toggle{display:flex;align-items:center;gap:8px;color:#466466;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer}
+.schedule-toggle input{appearance:none;-webkit-appearance:none;position:relative;width:40px;height:23px;min-width:40px;margin:0;border:0;border-radius:999px;background:#cbd5d6;cursor:pointer;transition:background .18s ease}
+.schedule-toggle input:before{content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,.18);transition:transform .18s ease}
+.schedule-toggle input:checked{background:#0fa7a7}
+.schedule-toggle input:checked:before{transform:translateX(17px)}
+.schedule-toggle input:focus-visible,.schedule-day-tab:focus-visible{outline:3px solid rgba(15,167,167,.25);outline-offset:2px}
+.schedule-control-grid{display:grid;grid-template-columns:1.2fr .8fr 1.2fr;gap:11px;margin-top:14px}
+.schedule-group{display:block;min-width:0;margin:0;padding:11px 12px;border:1px solid #e5eeee;border-radius:12px;background:#f8fbfb;color:#526c6e;font-size:11px;font-weight:700}
+.schedule-group>strong{display:block;margin:0 0 8px;color:#34585a;font-size:11px}
+.schedule-group>strong span{color:#829294;font-weight:500}
+.schedule-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.schedule-value-field{display:flex;flex-direction:column;gap:4px;min-width:0;margin:0;color:#6b8082;font-size:10px;font-weight:600}
+.schedule-group input{box-sizing:border-box;width:100%;min-width:0;height:38px;margin:0;padding:7px 8px;border:1px solid #d8e4e5;border-radius:9px;background:#fff;color:#163f42;font-size:13px}
+.schedule-group input:focus{border-color:#0fa7a7;outline:3px solid rgba(15,167,167,.12)}
+.schedule-group input:disabled{background:#eff3f3;color:#899799;cursor:not-allowed}
+.schedule-group-duration{display:flex;flex-direction:column;justify-content:center;gap:6px}
+.schedule-group-duration input{max-width:140px}
+.schedule-group-duration small{color:#829294;font-size:10px;font-weight:500}
+@media(max-width:760px){.schedule-day-tabs{grid-template-columns:repeat(4,minmax(0,1fr))}.schedule-control-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-group-duration{grid-column:1/-1}.schedule-group-duration input{max-width:100%}}
+@media(max-width:520px){.schedule-config{padding:14px}.schedule-panel{padding:14px}.schedule-panel-head{align-items:flex-start;flex-direction:column}.schedule-day-tabs{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.schedule-control-grid{grid-template-columns:1fr}.schedule-group-duration{grid-column:auto}}
+
+/* Dashboard municipal de indicadores e controles de sessão acessíveis */
+.secretaria-dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.secretaria-chart{display:grid;gap:12px;margin-top:14px}
+.secretaria-chart-row{display:grid;grid-template-columns:minmax(90px,1.2fr) 3fr 32px;align-items:center;gap:10px;font-size:13px}
+.secretaria-chart-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.secretaria-bar-track{height:10px;border-radius:99px;background:#e4eeee;overflow:hidden;margin:7px 0}
+.secretaria-bar-track i{display:block;height:100%;min-width:2px;border-radius:inherit;background:linear-gradient(90deg,#0b9f9f,#19b8aa)}
+.secretaria-health-grid{display:grid;gap:12px;margin-top:12px}
+.secretaria-health-card{padding:12px;border:1px solid #dcebed;border-radius:12px;background:#fff}
+.secretaria-health-card strong,.secretaria-health-card small{display:block}
+.secretaria-health-card small{color:#6f898c}
+.secretaria-health-values{display:flex;align-items:baseline;gap:8px;margin-top:5px}
+.secretaria-health-values b{font-size:22px;color:#078588}
+.clinic-session-actions{display:flex;align-items:center;gap:10px;padding-right:38px;position:relative}
+.clinic-session-close{right:-2px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;background:#f1f7f7;z-index:2}
+.close{z-index:2;width:42px;height:42px;display:grid;place-items:center;line-height:1;touch-action:manipulation}
+@media(max-width:800px){.secretaria-dashboard-grid{grid-template-columns:1fr}.clinic-session-actions{gap:5px;padding-right:35px}.clinic-session-actions .btn{padding:10px 12px}}

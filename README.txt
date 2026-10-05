@@ -140,9 +140,9 @@ Ao escolher uma especialidade, o paciente pode explicar o motivo do atendimento,
 
 O instalador cria um arquivo `install.lock` depois da primeira execução. Isso impede que o banco seja apagado acidentalmente ao acessar novamente `install.php`. Para uma reinstalação intencional, faça backup do banco e dos anexos, remova o arquivo de bloqueio e execute o instalador.
 
-O manual completo dos modos **UBS / rede pública** e **profissional particular / clínica** está em `GUIA_MODO_UBS_PROFISSIONAL.md`.
+O manual dos modos **UBS / rede pública** e **profissional particular / clínica** está em `GUIA_MODO_UBS_PROFISSIONAL.md`. Para a correção mais recente de expediente, pausas, salvamento e interface do portal profissional, consulte `IMPLEMENTACAO_AGENDA_SEGURANCA.md`.
 
-Para a versão com várias contas profissionais, pacientes vinculados, prontuários isolados, agendas independentes e assinaturas, consulte também `GUIA_PLATAFORMA_MULTIPROFISSIONAL.md`.
+Para a documentação de referência da versão multiprofissional, consulte também `GUIA_PLATAFORMA_MULTIPROFISSIONAL.md`. Nesta distribuição, a interface de prontuários foi removida; veja a nota de versão nesse guia.
 
 O fluxo de entrada separada para **Paciente SUS / UBS**, **Paciente de clínica particular**, **Profissional** e **Desenvolvedor** está explicado em `GUIA_PORTAIS_SEPARADOS.md`.
 
@@ -190,7 +190,7 @@ A tabela consultas não usa mais colunas GENERATED com DATE_FORMAT/TIME_FORMAT, 
 - Botões de início e navegação interna funcionando com retorno ao dashboard.
 - Botão fixo de suporte ao paciente no canto inferior esquerdo, com registro das solicitações no banco.
 - Cadastro do paciente vinculado à UBS de referência.
-- Desenvolvedor pode cadastrar novas UBS, especialidades, usuário e senha de acesso.
+- Desenvolvedor ou Administrador da Secretaria pode cadastrar novas UBS, especialidades, usuário e senha de acesso.
 - Agendamento por ordem de fila, sem escolha de horário, com limite de 12 vagas por dia e por especialidade.
 - Paciente pode cancelar ou reagendar; o comprovante mostra a posição na fila e a marca discreta da logo na impressão.
 - Tabela de notificações criada para futura integração com SMS, WhatsApp, e-mail ou push. Os lembretes são enfileirados automaticamente um dia antes da consulta.
